@@ -1,0 +1,23 @@
+[project]
+name = "autoauth0"
+version = "0.1.0"
+description = "autoauth0 using crewAI"
+authors = [{ name = "Your Name", email = "you@example.com" }]
+requires-python = ">=3.10,<3.13"
+dependencies = [
+    "crewai[tools]>=0.108.0,<1.0.0"
+]
+
+[project.scripts]
+autoauth0 = "autoauth0.main:run"
+run_crew = "autoauth0.main:run"
+train = "autoauth0.main:train"
+replay = "autoauth0.main:replay"
+test = "autoauth0.main:test"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.crewai]
+type = "crew"
