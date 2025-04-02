@@ -1,66 +1,30 @@
 #!/usr/bin/env python
-import sys
-import warnings
+import os
+import textwrap
+from pathlib import Path
+from dotenv import load_dotenv
+from src.autoauth0.crew import AutoAuth0Crew
 
-from datetime import datetime
+# Load environment variables from .env file
+load_dotenv()
 
-from autoauth0.crew import Autoauth0
+def main():
+    print(textwrap.dedent("""
+        Welcome to Auto-Auth0
 
-warnings.filterwarnings("ignore", category=SyntaxWarning, module="pysbd")
+        This tool will analyze your codebase and integrate Auth0 authentication.
+    """))
 
-# This main file is intended to be a way for you to run your
-# crew locally, so refrain from adding unnecessary logic into this file.
-# Replace with inputs you want to test with, it will automatically
-# interpolate any tasks and agents information
+    project_path = "/Users/brightwang/Documents/Github/autoauth0/auto_auth0_tests/auth0-python-web-app"
+    print(f"\nAnalyzing project at: {project_path}\n")
 
-def run():
-    """
-    Run the crew.
-    """
-    inputs = {
-        'topic': 'AI LLMs',
-        'current_year': str(datetime.now().year)
-    }
-    
-    try:
-        Autoauth0().crew().kickoff(inputs=inputs)
-    except Exception as e:
-        raise Exception(f"An error occurred while running the crew: {e}")
+    if not os.path.exists(project_path):
+        print(f"Error: Project path {project_path} does not exist.")
+        return
 
+    crew = AutoAuth0Crew(project_path)
+    result = crew.run()
+    print(result)
 
-def train():
-    """
-    Train the crew for a given number of iterations.
-    """
-    inputs = {
-        "topic": "AI LLMs"
-    }
-    try:
-        Autoauth0().crew().train(n_iterations=int(sys.argv[1]), filename=sys.argv[2], inputs=inputs)
-
-    except Exception as e:
-        raise Exception(f"An error occurred while training the crew: {e}")
-
-def replay():
-    """
-    Replay the crew execution from a specific task.
-    """
-    try:
-        Autoauth0().crew().replay(task_id=sys.argv[1])
-
-    except Exception as e:
-        raise Exception(f"An error occurred while replaying the crew: {e}")
-
-def test():
-    """
-    Test the crew execution and returns the results.
-    """
-    inputs = {
-        "topic": "AI LLMs",
-        "current_year": str(datetime.now().year)
-    }
-    try:
-        Autoauth0().crew().test(n_iterations=int(sys.argv[1]), openai_model_name=sys.argv[2], inputs=inputs)
-
-    except Exception as e:
-        raise Exception(f"An error occurred while testing the crew: {e}")
+if __name__ == "__main__":
+    main()
