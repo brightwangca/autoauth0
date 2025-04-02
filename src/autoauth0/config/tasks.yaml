@@ -120,7 +120,7 @@ analyze_requirements_task:
 integrate_auth0_task:
   description: >
     """
-    Update all code to implement Auth0 integration based on analysis report and Codebase Analysis Agent.
+    Update all code to implement Auth0 integration based on analysis report and Codebase Analysis Agent. Use validation agent to ensure the integration is correct, if issues are found, fix it.
     Focus on:
     1. Generating secure, framework-specific Auth0 code
     2. Injecting code into appropriate files
