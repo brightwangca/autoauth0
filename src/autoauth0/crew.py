@@ -10,6 +10,7 @@ from crewai_tools import (
 )
 from pathlib import Path
 import yaml
+from langchain.chat_models import ChatOpenAI
 
 # If you want to run a snippet of code before or after the crew starts,
 # you can use the @before_kickoff and @after_kickoff decorators
@@ -24,13 +25,19 @@ class CodebaseAnalysisCrew:
     def __init__(self, project_path: str = None):
         super().__init__()
         self.project_path = project_path
+        # Initialize GPT-4 with temperature 0.0 for most deterministic outputs
+        self.llm = ChatOpenAI(
+            model="gpt-4",
+            temperature=0.0
+        )
     
     @agent
     def manager_agent(self) -> Agent:
         return Agent(
             config=self.agents_config['manager_agent'],
             allow_delegation=True,
-            verbose=True
+            verbose=True,
+            llm=self.llm
         )
     
     @agent
@@ -42,7 +49,8 @@ class CodebaseAnalysisCrew:
                 DirectoryReadTool(directory=self.project_path),
                 FileReadTool()
             ],
-            verbose=True
+            verbose=True,
+            llm=self.llm
         )
     
     @agent
@@ -54,7 +62,8 @@ class CodebaseAnalysisCrew:
                 DirectoryReadTool(directory=self.project_path),
                 FileReadTool()
             ],
-            verbose=True
+            verbose=True,
+            llm=self.llm
         )
 
     @agent
@@ -70,7 +79,8 @@ class CodebaseAnalysisCrew:
                 SerperDevTool(),
                 ScrapeWebsiteTool()
             ],
-            verbose=True
+            verbose=True,
+            llm=self.llm
         )
 
     @agent
@@ -82,7 +92,8 @@ class CodebaseAnalysisCrew:
                 DirectoryReadTool(directory=self.project_path),
                 FileReadTool()
             ],
-            verbose=True
+            verbose=True,
+            llm=self.llm
         )
     
     @task
