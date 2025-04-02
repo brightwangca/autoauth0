@@ -98,11 +98,12 @@ The Manager Agent coordinates the work between all other agents, ensuring:
 **Outputs:** Modified code files
 
 **Tools:**
+  - `DirectoryReadTool` (Required): Explore folder and file structures
   - `FileReadTool` (Required): Read source files for context
   - `FileWriteTool` (Required): Inject generated code
-  - `CodeDocsSearchTool` (Optional): Search Auth0 documentation
-  - `SerperDevTool` (Optional): Search for Auth0 implementation examples
-  - `ScrapeWebsiteTool` (Optional): Extract code snippets from Auth0 docs
+  - `CodeDocsSearchTool` (Required): Search Auth0 documentation
+  - `SerperDevTool` (Required): Search for Auth0 implementation examples
+  - `ScrapeWebsiteTool` (Required): Extract code snippets from Auth0 docs
 
 **Tasks:**
 - [Required] Update all code to implement Auth0 integration based on analysis report and Codebase Analysis Agent

@@ -1,6 +1,13 @@
 from crewai import Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
-from crewai_tools import DirectoryReadTool, FileReadTool
+from crewai_tools import (
+    DirectoryReadTool, 
+    FileReadTool, 
+    FileWriteTool,
+    # CodeDocsSearchTool,
+    SerperDevTool,
+    ScrapeWebsiteTool
+)
 from pathlib import Path
 import yaml
 
@@ -61,7 +68,11 @@ class CodebaseAnalysisCrew:
             allow_delegation=False,
             tools=[
                 DirectoryReadTool(directory=self.project_path),
-                FileReadTool()
+                FileReadTool(),
+                FileWriteTool(),
+                # CodeDocsSearchTool(),
+                SerperDevTool(),
+                ScrapeWebsiteTool()
             ],
             verbose=True
         )
@@ -108,7 +119,7 @@ class CodebaseAnalysisCrew:
             config=self.tasks_config['integrate_auth0_task'],
             agent=self.auth0_integration_agent(),
             context=[{
-                "description": "Implement Auth0 integration based on analysis",
+                "description": "Implement Auth0 integration based on analysis from requirements and codebase analysis",
                 "expected_output": "Modified code files with Auth0 integration",
                 "project_path": self.project_path
             }]
@@ -120,8 +131,8 @@ class CodebaseAnalysisCrew:
             config=self.tasks_config['validate_integration_task'],
             agent=self.validation_agent(),
             context=[{
-                "description": "Validate Auth0 integration for security and correctness",
-                "expected_output": "Validation report with security assessment",
+                "description": "Validate Auth0 integration for security and correctness. If issues are found, provide detailed feedback for the integration agent to fix.",
+                "expected_output": "Validation report with security assessment and any issues that need to be addressed",
                 "project_path": self.project_path
             }]
         )
@@ -131,7 +142,8 @@ class CodebaseAnalysisCrew:
         return Crew(
             agents=self.agents,
             tasks=self.tasks,
-            process=Process.sequential,
+            process=Process.hierarchical,
+            manager_agent=self.manager_agent(),
             verbose=True
         )
 
