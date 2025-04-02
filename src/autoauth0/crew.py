@@ -19,10 +19,10 @@ class CodebaseAnalysisCrew:
         self.project_path = project_path
     
     @agent
-    def codebase_analyzer_agent(self) -> Agent:
+    def manager_agent(self) -> Agent:
         return Agent(
-            config=self.agents_config['codebase_analysis_agent'],
-            allow_delegation=False,
+            config=self.agents_config['manager_agent'],
+            allow_delegation=True,
             tools=[
                 DirectoryReadTool(directory=self.project_path),
                 FileReadTool()
@@ -31,7 +31,7 @@ class CodebaseAnalysisCrew:
         )
     
     @agent
-    def requirements_analyzer_agent(self) -> Agent:
+    def requirements_analysis_agent(self) -> Agent:
         return Agent(
             config=self.agents_config['requirements_analysis_agent'],
             allow_delegation=False,
@@ -42,26 +42,86 @@ class CodebaseAnalysisCrew:
             verbose=True
         )
     
-    @task
-    def analyze_codebase(self) -> Task:
-        return Task(
-            config=self.tasks_config['analyze_codebase_task'],
-            agent=self.codebase_analyzer_agent(),
-            context=[{
-                "description": "Analyze the codebase to identify files that need Auth0 integration",
-                "expected_output": "A structured JSON report containing files to modify, framework considerations, and dependencies",
-                "project_path": self.project_path
-            }]
+    @agent
+    def codebase_analysis_agent(self) -> Agent:
+        return Agent(
+            config=self.agents_config['codebase_analysis_agent'],
+            allow_delegation=False,
+            tools=[
+                DirectoryReadTool(directory=self.project_path),
+                FileReadTool()
+            ],
+            verbose=True
+        )
+
+    @agent
+    def auth0_integration_agent(self) -> Agent:
+        return Agent(
+            config=self.agents_config['auth0_integration_agent'],
+            allow_delegation=False,
+            tools=[
+                DirectoryReadTool(directory=self.project_path),
+                FileReadTool()
+            ],
+            verbose=True
+        )
+
+    @agent
+    def validation_agent(self) -> Agent:
+        return Agent(
+            config=self.agents_config['validation_agent'],
+            allow_delegation=False,
+            tools=[
+                DirectoryReadTool(directory=self.project_path),
+                FileReadTool()
+            ],
+            verbose=True
         )
     
     @task
     def analyze_requirements(self) -> Task:
         return Task(
             config=self.tasks_config['analyze_requirements_task'],
-            agent=self.requirements_analyzer_agent(),
+            agent=self.requirements_analysis_agent(),
             context=[{
-                "description": "Analyze project dependencies and requirements for Auth0 integration",
-                "expected_output": "A structured JSON report containing dependency analysis and requirements",
+                "description": "Analyze Auth0 integration requirements from documentation",
+                "expected_output": "A structured JSON report containing Auth0 integration requirements and configurations",
+                "project_path": self.project_path
+            }]
+        )
+    
+    @task
+    def analyze_codebase(self) -> Task:
+        return Task(
+            config=self.tasks_config['analyze_codebase_task'],
+            agent=self.codebase_analysis_agent(),
+            context=[{
+                "description": "Analyze the codebase to identify files that need Auth0 integration",
+                "expected_output": "A structured JSON report containing files to modify and framework considerations",
+                "project_path": self.project_path
+            }]
+        )
+
+    @task
+    def integrate_auth0(self) -> Task:
+        return Task(
+            config=self.tasks_config['integrate_auth0_task'],
+            agent=self.auth0_integration_agent(),
+            context=[{
+                "description": "Implement Auth0 integration based on analysis",
+                "expected_output": "Modified code files with Auth0 integration",
+                "project_path": self.project_path
+            }]
+        )
+
+    @task
+    def validate_integration(self) -> Task:
+        return Task(
+            config=self.tasks_config['validate_integration_task'],
+            agent=self.validation_agent(),
+            context=[{
+                "description": "Validate Auth0 integration for security and correctness",
+                "expected_output": "Validation report with security assessment",
                 "project_path": self.project_path
             }]
         )

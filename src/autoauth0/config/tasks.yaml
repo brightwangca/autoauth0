@@ -1,17 +1,15 @@
 analyze_codebase_task:
   description: >
     """
-    Analyze the codebase to identify files that need Auth0 integration. Only keep files that are relevant to Auth0 integration.
-    For each file:
-    1. Determine its current purpose and role
-    2. List required Auth0-related changes
-    3. Identify dependencies and prerequisites
-    4. Consider framework-specific requirements
-
-    Final answer MUST be a structured JSON report containing:
-    - files_to_modify: List of files needing changes
-    - framework_considerations: Framework-specific requirements
-    - dependencies: Project-wide dependencies
+    Generate summary report with:
+    1. List of files that need to be modified for Auth0 integration
+    2. For each file:
+       - Current purpose/role of the file
+       - Required Auth0-related changes
+       - Description of the edits needed
+       - Any dependencies or prerequisites for the changes
+    3. Framework-specific considerations
+    4. Comments for downstream agents
 
     PROJECT PATH:
     ----------
@@ -32,30 +30,31 @@ analyze_codebase_task:
         "framework_type": "string",
         "auth_patterns": ["string"],
         "security_requirements": ["string"]
-      },
-      "dependencies": {
-        "required_packages": ["string"],
-        "environment_variables": ["string"],
-        "configuration_files": ["string"]
       }
     }
 
 analyze_requirements_task:
   description: >
     """
-    Analyze the project's dependencies and requirements for Auth0 integration.
-    For each dependency:
-    1. Check version compatibility with Auth0 requirements
-    2. Identify any missing dependencies
-    3. Validate security requirements
-    4. Ensure all necessary packages are listed
+    Read and analyze the auth0_integration.md file to extract and structure key information in the file then generate a concise, actionable report for downstream agents.
+    Focus on:
+    1. Application type and authentication methods
+    2. URL configurations and redirects
+    3. User experience requirements
+    4. Security settings and policies
+    5. Role-based access control needs
+    6. API requirements
+    7. Custom data and migration needs
 
     Final answer MUST be a structured JSON report containing:
-    - current_dependencies: List of current project dependencies
-    - required_dependencies: List of dependencies needed for Auth0
-    - version_compatibility: Compatibility analysis
-    - security_requirements: Security-related package requirements
-    - missing_dependencies: List of missing required packages
+    - application_type: Type of application and authentication methods
+    - url_configurations: All required URLs and redirects
+    - user_experience: Login/logout flows and UI requirements
+    - security_settings: MFA and password policies
+    - access_control: RBAC configuration if needed
+    - api_requirements: API security needs
+    - custom_data: Custom claims and user metadata requirements
+    - migration_needs: Any existing user migration requirements
 
     PROJECT PATH:
     ----------
@@ -63,45 +62,131 @@ analyze_requirements_task:
     """
   expected_output: >
     {
-      "current_dependencies": [
+      "application_type": {
+        "type": "string",
+        "authentication_methods": ["string"]
+      },
+      "url_configurations": {
+        "callback_urls": ["string"],
+        "logout_urls": ["string"],
+        "web_origins": ["string"],
+        "cors_origins": ["string"]
+      },
+      "user_experience": {
+        "login_redirect": "string",
+        "logout_redirect": "string",
+        "custom_login_page": "boolean",
+        "branding": {
+          "background_color": "string",
+          "logo_url": "string"
+        }
+      },
+      "security_settings": {
+        "mfa": {
+          "enabled": "boolean",
+          "type": "string"
+        },
+        "password_policy": {
+          "min_length": "number",
+          "complexity": "string"
+        }
+      },
+      "access_control": {
+        "rbac_enabled": "boolean",
+        "roles": ["string"],
+        "permissions": ["string"]
+      },
+      "api_requirements": {
+        "api_secured": "boolean",
+        "audience": "string",
+        "scopes": ["string"]
+      },
+      "custom_data": {
+        "custom_claims": {
+          "enabled": "boolean",
+          "claims": ["string"]
+        },
+        "user_metadata": {
+          "enabled": "boolean",
+          "fields": ["string"]
+        }
+      },
+      "migration_needs": {
+        "required": "boolean",
+        "source": "string"
+      }
+    }
+
+integrate_auth0_task:
+  description: >
+    """
+    Update all code to implement Auth0 integration based on analysis report and Codebase Analysis Agent.
+    Focus on:
+    1. Generating secure, framework-specific Auth0 code
+    2. Injecting code into appropriate files
+    3. Ensuring proper error handling
+    4. Following Auth0 best practices
+    5. Maintaining code readability and maintainability
+
+    PROJECT PATH:
+    ----------
+    {project_path}
+    """
+  expected_output: >
+    {
+      "modified_files": [
         {
-          "package": "string",
-          "version": "string",
-          "purpose": "string"
+          "file_path": "string",
+          "changes_made": ["string"],
+          "status": "string"
         }
       ],
-      "required_dependencies": [
-        {
-          "package": "string",
-          "version": "string",
-          "purpose": "string",
-          "is_installed": "boolean"
-        }
-      ],
-      "version_compatibility": {
-        "compatible_packages": ["string"],
-        "incompatible_packages": [
+      "integration_summary": {
+        "success": "boolean",
+        "issues": ["string"],
+        "recommendations": ["string"]
+      }
+    }
+
+validate_integration_task:
+  description: >
+    """
+    Analyze Auth0 integration for common security pitfalls:
+    1. Hardcoded credentials in code
+    2. Missing CSRF protection
+    3. Improper token storage/handling
+    4. Insecure session management
+    5. Missing error handling
+    6. Incorrect callback URL validation
+    7. Insufficient logging
+    8. Missing rate limiting
+    9. Insecure password policies
+    10. Improper role/permission checks
+
+    PROJECT PATH:
+    ----------
+    {project_path}
+    """
+  expected_output: >
+    {
+      "validation_results": {
+        "overall_status": "string",
+        "confidence_score": "number",
+        "issues_found": [
           {
-            "package": "string",
-            "current_version": "string",
-            "required_version": "string",
-            "reason": "string"
+            "type": "string",
+            "severity": "string",
+            "description": "string",
+            "recommendation": "string"
+          }
+        ],
+        "security_checks": [
+          {
+            "check": "string",
+            "status": "string",
+            "details": "string"
           }
         ]
-      },
-      "security_requirements": [
-        {
-          "requirement": "string",
-          "status": "string",
-          "package": "string"
-        }
-      ],
-      "missing_dependencies": [
-        {
-          "package": "string",
-          "version": "string",
-          "purpose": "string"
-        }
-      ]
+      }
     }
 
