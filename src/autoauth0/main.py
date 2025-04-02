@@ -3,7 +3,7 @@ import os
 import textwrap
 from pathlib import Path
 from dotenv import load_dotenv
-from src.autoauth0.crew import AutoAuth0Crew
+from crew import AutoAuth0Crew
 
 # Load environment variables from .env file
 load_dotenv()
@@ -15,14 +15,12 @@ def main():
         This tool will analyze your codebase and integrate Auth0 authentication.
     """))
 
-    project_path = "/Users/brightwang/Documents/Github/autoauth0/auto_auth0_tests/auth0-python-web-app"
-    print(f"\nAnalyzing project at: {project_path}\n")
-
-    if not os.path.exists(project_path):
-        print(f"Error: Project path {project_path} does not exist.")
-        return
-
-    crew = AutoAuth0Crew(project_path)
+    # Get the absolute path to the test project
+    current_dir = Path(__file__).parent.parent.parent
+    test_project_path = current_dir / "auto_auth0_tests" / "auth0-python-web-app"
+    
+    # Initialize and run the crew
+    crew = AutoAuth0Crew(str(test_project_path))
     result = crew.run()
     print(result)
 

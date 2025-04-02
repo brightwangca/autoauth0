@@ -3,8 +3,8 @@ from crewai.project import CrewBase, agent, crew, task
 from crewai_tools import (
     DirectoryReadTool, 
     FileReadTool, 
-    FileWriteTool,
-    # CodeDocsSearchTool,
+    FileWriterTool,
+    # CodeDocsSearchTool,  # Not needed for now
     SerperDevTool,
     ScrapeWebsiteTool
 )
@@ -30,10 +30,6 @@ class CodebaseAnalysisCrew:
         return Agent(
             config=self.agents_config['manager_agent'],
             allow_delegation=True,
-            tools=[
-                DirectoryReadTool(directory=self.project_path),
-                FileReadTool()
-            ],
             verbose=True
         )
     
@@ -69,8 +65,8 @@ class CodebaseAnalysisCrew:
             tools=[
                 DirectoryReadTool(directory=self.project_path),
                 FileReadTool(),
-                FileWriteTool(),
-                # CodeDocsSearchTool(),
+                FileWriterTool(),
+                # CodeDocsSearchTool(),  # Not needed for now
                 SerperDevTool(),
                 ScrapeWebsiteTool()
             ],
@@ -140,7 +136,12 @@ class CodebaseAnalysisCrew:
     @crew
     def crew(self) -> Crew:
         return Crew(
-            agents=self.agents,
+            agents=[
+                self.requirements_analysis_agent(),
+                self.codebase_analysis_agent(),
+                self.auth0_integration_agent(),
+                self.validation_agent()
+            ],
             tasks=self.tasks,
             process=Process.hierarchical,
             manager_agent=self.manager_agent(),
