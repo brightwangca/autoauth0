@@ -15,3 +15,68 @@ reporting_task:
     A fully fledged report with the main topics, each with a full section of information.
     Formatted as markdown without '```'
   agent: reporting_analyst
+
+codebase_analysis:
+  main_analysis:
+    description: "Analyze the codebase for Auth0 integration points"
+    prompt: |
+      You are analyzing the codebase at {project_path} to identify integration points for Auth0 authentication.
+      
+      Your task is to:
+      1. Identify all files that need to be modified for Auth0 integration
+      2. For each file:
+         - Determine its current purpose and role in the application
+         - List the specific Auth0-related changes needed
+         - Identify any dependencies or prerequisites for these changes
+      3. Consider framework-specific requirements and best practices
+      4. Look for existing authentication-related code that might need to be replaced
+      
+      Provide your analysis in a structured JSON format with the following structure:
+      {
+          "files_to_modify": [
+              {
+                  "file_path": "path/to/file",
+                  "current_purpose": "description",
+                  "required_changes": ["list", "of", "changes"],
+                  "dependencies": ["list", "of", "dependencies"]
+              }
+          ],
+          "framework_considerations": [
+              "list of framework-specific considerations"
+          ],
+          "dependencies": [
+              "list of project-wide dependencies"
+          ]
+      }
+      
+      Be thorough but concise. Focus on identifying the most critical integration points first.
+
+  file_analysis:
+    description: "Analyze a specific file for Auth0 integration requirements"
+    prompt: |
+      Analyze the following file for Auth0 integration requirements:
+      
+      File: {file_path}
+      Content:
+      {file_content}
+      
+      Provide a structured analysis of:
+      1. Current purpose of this file
+      2. Required Auth0-related changes
+      3. Dependencies or prerequisites
+      4. Any security considerations
+      
+      Format your response as JSON.
+
+  framework_analysis:
+    description: "Analyze framework-specific Auth0 integration requirements"
+    prompt: |
+      Analyze the Auth0 integration requirements specific to the {framework_type} framework.
+      
+      Consider:
+      1. Framework-specific authentication patterns
+      2. Required middleware or plugins
+      3. Security best practices
+      4. Common pitfalls to avoid
+      
+      Provide your analysis in a structured format.
