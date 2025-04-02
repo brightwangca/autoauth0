@@ -1,19 +1,66 @@
 # Auto-Auth0
 
-Auto-Auth0 is an intelligent application that simplifies and accelerates the process of integrating Auth0 authentication into your web projects. It uses a CrewAI-powered system to analyze your codebase, read your requirements from a markdown file, and manage the integration process.
+Auto-Auth0 is an intelligent tool that automatically adds Auth0 authentication to any web project. It uses AI agents to analyze your codebase, understand your Auth0 requirements, and make the necessary changes to integrate Auth0 authentication.
 
-## Architecture
+## What This Tool Does
 
-The application uses **CrewAI** and **Python**:
-- It hosts specialized AI agents (Codebase Analyzer, Auth0 Integrator, etc.).
-- It performs codebase analysis, reads requirements from `knowledge/auth0_integration.md`.
-- It generates Auth0 integration code and validates the results.
+- Takes your existing web application codebase as input
+- Reads your Auth0 integration requirements from a markdown file
+- Uses AI agents to analyze your code and determine where Auth0 needs to be added
+- Automatically makes the necessary code changes to integrate Auth0
+- Validates the integration to ensure it's secure and follows best practices
+
+## What This Tool Is Not
+
+- This is NOT a web application that uses Auth0
+- This is NOT an Auth0 configuration tool
+- This is NOT a manual integration guide
 
 ## Agent Specifications
 
----
+### 1. Manager Agent
 
-### 1. Codebase Analysis Agent
+- **Role:** Project Manager
+- **Goal:** Efficiently manage the crew and ensure high-quality task completion for Auth0 integration
+- **Backstory:** You're an experienced project manager, skilled in overseeing complex authentication integration projects and guiding teams to success. Your role is to coordinate the efforts of the crew members, ensuring that each task is completed on time and to the highest standard.
+- **Delegation:** True (allows delegation to other agents)
+- **Process:** Hierarchical (manages other agents in a top-down structure)
+
+The Manager Agent coordinates the work between all other agents, ensuring:
+- Proper task delegation and sequencing
+- Information flow between agents
+- Quality control of outputs
+- Overall progress tracking
+- Issue resolution and handling
+- Final integration validation
+
+**Inputs:** Project directory path, initial requirements
+**Outputs:** Final integration report with overall status and any issues encountered
+
+**Tools:**
+- **File & Code Access:**
+  - `FileReadTool` (Required): Read project files and reports
+  - `DirectoryReadTool` (Required): Access project structure
+
+### 2. Requirements Analysis Agent
+
+- **Role:** Requirements Analyzer
+- **Goal:** Transform the `auth0_integration.md` file into a concise, structured report for downstream agents.
+- **Backstory:** Expert in Auth0 configuration and requirements analysis, skilled at extracting key information from documentation.
+- **Delegation:** Passes structured requirements report to Codebase Analysis Agent
+- **Depends On:** None
+
+**Inputs:** `knowledge/auth0_integration.md` file contents
+**Outputs:** Structured JSON/YAML report with key Auth0 requirements and configurations
+
+**Tools:**
+- **File & Code Access:**
+  - `FileReadTool` (Required): Read and parse the `auth0_integration.md` file
+
+**Tasks:**
+- [Required] Read and analyze the `auth0_integration.md` file to extract and structure key information in the file then generate a concise, actionable report for downstream agents
+
+### 3. Codebase Analysis Agent
 
 - **Role:** Analyzer
 - **Goal:** Identify key code sections in the developer's project suitable for Auth0 integration.
@@ -28,57 +75,39 @@ The application uses **CrewAI** and **Python**:
 - **File & Code Access:**
   - `DirectoryReadTool` (Required): Explore folder and file structures
   - `FileReadTool` or `CodeReadTool` (Required): Read relevant source files
-- **Search & Reference:**
-  - `GitHubSearchTool` (Optional): Search example codebases
-- **Custom:**
-  - `Tree-sitter`: Parse language-specific syntax trees
 
 **Tasks:**
-- [Required] Detect framework and language (e.g., React, Node.js, Django)
 - [Required] Generate summary report with:
-  - Framework/language
-  - Recommended integration points (paths, line refs)
-  - File classification (routes, middleware, etc.)
+  - List of files that need to be modified for Auth0 integration
+  - For each file:
+    - Current purpose/role of the file
+    - Required Auth0-related changes
+    - Description of the edits needed
+    - Any dependencies or prerequisites for the changes
+  - Framework-specific considerations
   - Comments for downstream agents
-- [Optional] Tree traversal/parsing with Tree-sitter
-- [Optional] Identify entry points, route definitions, etc.
-- [Optional] Classify files by role
 
----
-
-### 2. Auth0 Integration Agent
+### 4. Auth0 Integration Agent
 
 - **Role:** Code Generator
 - **Goal:** Generate and inject secure, framework-specific Auth0 code based on analysis and user requirements.
 - **Backstory:** Expert engineer building maintainable auth code across frameworks
 - **Delegation:** Outputs files and integration summary to Validation Agent
-- **Depends On:** Codebase Analysis Agent, User-provided `knowledge/auth0_integration.md` file
+- **Depends On:** Requirements Analysis Agent, Codebase Analysis Agent
 
-**Inputs:** Analysis report, `knowledge/auth0_integration.md` file contents
-**Outputs:** Modified code files, code diff map (optional)
+**Outputs:** Modified code files
 
 **Tools:**
-- **File & Code Access:**
-  - `FileReadTool` (Required): Read source files for context and the `auth0_integration.md` file.
+  - `FileReadTool` (Required): Read source files for context
   - `FileWriteTool` (Required): Inject generated code
-- **LLM & Docs:**
-  - Claude/GPT-4 (Required): Generate integration logic
-  - `Code Docs RAG Search` (Required): Retrieve best practices from Auth0 docs
-- **Search & Reference:**
-  - `GitHubSearchTool` (Optional): Reference open-source examples
-- **Custom:**
-  - Code formatter/injector: Style-consistent insertion
+  - `CodeDocsSearchTool` (Optional): Search Auth0 documentation
+  - `SerperDevTool` (Optional): Search for Auth0 implementation examples
+  - `ScrapeWebsiteTool` (Optional): Extract code snippets from Auth0 docs
 
 **Tasks:**
-- [Required] Parse analysis report and `auth0_integration.md` file.
-- Generate code: config files, handlers, middleware logic
-- [Required] Insert code using write tool
-- [Optional] Respect style/framework conventions
-- [Optional] Output change map
+- [Required] Update all code to implement Auth0 integration based on analysis report and Codebase Analysis Agent
 
----
-
-### 3. Validation Agent
+### 5. Validation Agent
 
 - **Role:** Security Auditor
 - **Goal:** Validate Auth0 integration code for correctness and security
@@ -92,26 +121,32 @@ The application uses **CrewAI** and **Python**:
 **Tools:**
 - **File & Code Access:**
   - `FileReadTool` (Required): Review integrated files
+  - `CodeDocsSearchTool` (Optional): Search Auth0 documentation
+  - `SerperDevTool` (Optional): Search for Auth0 implementation examples
+  - `ScrapeWebsiteTool` (Optional): Extract code snippets from Auth0 docs
 - **Security Heuristics:**
   - OWASP Guidelines (Required): Auth security checklist
   - Heuristic rule checker (Required): Scan for common vulnerabilities
-- **Search & Reference:**
-  - `GitHubSearchTool` (Optional): Compare with verified codebases
-- **Custom:**
-  - Static validation rule set: Detect anti-patterns
 
 **Tasks:**
-- Scan for required components (token handling, session, logout)
-- [Required] Detect insecure practices (hardcoded secrets, CSRF)
-- [Optional] Match against best practices
-- [Required] Output annotated checklist with confidence score
+- [Required] Analyze Auth0 integration for common security pitfalls:
+  * Hardcoded credentials in code
+  * Missing CSRF protection
+  * Improper token storage/handling
+  * Insecure session management
+  * Missing error handling
+  * Incorrect callback URL validation
+  * Insufficient logging
+  * Missing rate limiting
+  * Insecure password policies
+  * Improper role/permission checks
 
 ## Prerequisites
 
 - Python >=3.10 <3.13
 - Auth0 account with appropriate permissions
-- OpenAI API key
-- Git repository with appropriate access (if using related tools)
+- OpenAI API key (OPENAI_API_KEY)
+- Serper API key (SERPER_API_KEY)
 
 ## Installation
 
@@ -128,88 +163,42 @@ source .venv/bin/activate # Or `.venv\Scripts\activate` on Windows
 
 # Install dependencies using uv (or pip)
 uv pip install -r requirements.txt # Or pip install -r requirements.txt
-# Alternatively, if using crewai install:
-# crewai install
 ```
 
 3. Configure environment variables. Create a `.env` file in the project root and add your keys:
 ```
 OPENAI_API_KEY=your_openai_api_key
-# Required if using Auth0-specific tools/API calls:
-# AUTH0_DOMAIN=your_auth0_domain
-# AUTH0_CLIENT_ID=your_auth0_client_id
-# AUTH0_CLIENT_SECRET=your_auth0_client_secret
-# Required if using GitHub tools:
-# GITHUB_TOKEN=your_github_token
+SERPER_API_KEY=your_serper_api_key
 ```
-
-## Running the Application
-
-1.  **Prepare Requirements:** Fill in the `knowledge/auth0_integration.md` file with your specific Auth0 integration requirements. Detail things like:
-    *   Authentication methods desired (e.g., Email/Password, Google Social Login)
-    *   Application Type (e.g., Regular Web App, Single Page App)
-    *   Callback URL(s)
-    *   Logout URL(s)
-    *   Role-Based Access Control (RBAC) needs
-    *   Multi-Factor Authentication (MFA) requirements
-    *   Any other specific configurations.
-
-2.  **Run the Crew:**
-    Open a terminal in the project root directory (with your virtual environment activated) and run the main script:
-    ```bash
-    python src/auto_auth0/main.py
-    ```
-    You may need to adjust `src/auto_auth0/main.py` to pass the correct initial inputs (like the target project path) to the `kickoff` method if they are not hardcoded or handled via arguments. Currently, it uses placeholder inputs.
 
 ## Usage
 
-1.  Ensure your `.env` file is correctly configured.
-2.  Modify the `knowledge/auth0_integration.md` file with your project's specific Auth0 needs.
-3.  Run the application using `python src/auto_auth0/main.py`.
-4.  The AI agents will execute sequentially:
-    *   Analyze your codebase.
-    *   Read requirements from `knowledge/auth0_integration.md`.
-    *   Generate and attempt to inject the Auth0 code.
-    *   Validate the integration.
-5.  Review the output logs and the changes made to your codebase.
+1. Ensure your `.env` file is correctly configured.
+2. Modify the `knowledge/auth0_integration.md` file with your project's specific Auth0 needs.
+3. Run the application using `python src/auto_auth0/main.py`.
+4. The AI agents will execute sequentially:
+    * Analyze your codebase.
+    * Read requirements from `knowledge/auth0_integration.md`.
+    * Generate and attempt to inject the Auth0 code.
+    * Validate the integration.
+5. Review the output logs and the changes made to your codebase.
 
-## Features
+## Project Structure
 
-- Intelligent codebase analysis
-- Requirements definition via Markdown file
-- Automated Auth0 code generation
-- Security best practice validation
-- Multi-framework support (potential, depending on agent capabilities)
-
-## Development
-
-The project structure:
 ```
 src/                  # Back-end source code
   auto_auth0/
     config/         # Configuration files (agents.yaml, tasks.yaml)
-    agents/         # AI agent definitions (loaded from config in crew.py)
-    tasks/          # Task definitions (loaded from config in crew.py)
-    tools/          # Custom tools (FileReadTool, etc.)
+    agents/         # AI agent definitions
+    tasks/          # Task definitions
+    tools/          # Custom tools
     crew.py         # Main crew orchestration logic
     main.py         # Script to run the crew
-    # ... other backend modules
 knowledge/            # Directory for knowledge files
   auth0_integration.md # User-defined requirements file
-auto_auth0_tests/     # Test codebases
-  python-web-app/   # Cleaned Python web app for testing
-  # ... other test cases
+auto_auth0_tests/     # Test codebases for input & output testing
+  python-web-app/   # Example Python web app without Auth0 integrated
+  auth0-python-web-app/ # Example Python web app *with* Auth0 integrated
 .env                # Environment variables (sensitive keys)
 requirements.txt      # Backend Python dependencies
-README.md
-LICENSE
-# ... other project files (.gitignore, etc.)
 ```
-
-## Configuration
-
-The back-end system can be configured through several YAML files:
-- `src/auto_auth0/config/agents.yaml`: Define AI agent roles and capabilities
-- `src/auto_auth0/config/tasks.yaml`: Configure specific Auth0 integration tasks
-- `src/auto_auth0/crew.py`: Customize agent interactions and workflows
-- `src/auto_auth0/main.py`: Adjust execution flow and initial inputs
